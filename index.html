@@ -104,18 +104,182 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="BP-003 Liberty Protocol — a technical blueprint for a high-fidelity anime character in a performance-constrained GTA-style browser game. 50–60 FPS on 4GB RAM." />
-    <title>BP-003 · Liberty Protocol — Technical Blueprint</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" type="image/svg+xml" href="image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%230a2340'/%3E%3Ccircle cx='16' cy='16' r='9' fill='none' stroke='%2363c5ff' stroke-width='2'/%3E%3Cpath d='M16 2v8M16 22v8M2 16h8M22 16h8' stroke='%2363c5ff' stroke-width='2'/%3E%3C/svg%3E" />
+    <title>Anime City - GTA Style Action Game</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        overflow: hidden;
+        background: #1a1a2e;
+        font-family: 'Segoe UI', Arial, sans-serif;
+      }
+      #game-container {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+      }
+      #ui-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 100;
+      }
+      .character-select {
+        position: fixed;
+        bottom: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        gap: 10px;
+        pointer-events: auto;
+        background: rgba(0,0,0,0.7);
+        padding: 10px;
+        border-radius: 10px;
+      }
+      .char-btn {
+        width: 60px;
+        height: 60px;
+        border: 3px solid #444;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #2a2a4a, #1a1a2e);
+      }
+      .char-btn:hover, .char-btn.active {
+        border-color: #00d4ff;
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(0,212,255,0.5);
+      }
+      .hud {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: rgba(0,0,0,0.7);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        min-width: 200px;
+      }
+      .health-bar, .energy-bar {
+        width: 100%;
+        height: 20px;
+        background: #333;
+        border-radius: 10px;
+        margin: 5px 0;
+        overflow: hidden;
+      }
+      .health-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #ff4444, #ff6666);
+        transition: width 0.3s;
+      }
+      .energy-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #4444ff, #6666ff);
+        transition: width 0.3s;
+      }
+      .controls-hint {
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        background: rgba(0,0,0,0.7);
+        padding: 15px;
+        border-radius: 10px;
+        color: white;
+        font-size: 12px;
+        line-height: 1.6;
+      }
+      .ability-icons {
+        position: fixed;
+        bottom: 100px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        pointer-events: auto;
+      }
+      .ability-btn {
+        width: 50px;
+        height: 50px;
+        border: 2px solid #444;
+        border-radius: 8px;
+        cursor: pointer;
+        background: rgba(0,0,0,0.7);
+        color: white;
+        font-size: 20px;
+        transition: all 0.2s;
+      }
+      .ability-btn:hover {
+        border-color: #00d4ff;
+        transform: scale(1.1);
+      }
+      .ability-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+      #loading {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #1a1a2e;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: white;
+      }
+      .loading-spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid #333;
+        border-top-color: #00d4ff;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to { transform: rotate(360deg); }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="loading">
+      <div class="loading-spinner"></div>
+      <p style="margin-top: 20px;">Loading Anime City...</p>
+    </div>
+    <div id="game-container"></div>
+    <div id="ui-overlay">
+      <div class="controls-hint">
+        <strong>Controls:</strong><br>
+        WASD / Arrows - Move<br>
+        Space - Jump<br>
+        Left Click - Attack<br>
+        1-4 - Special Abilities<br>
+        Right Click - Block/Dash
+      </div>
+      <div class="hud">
+        <div id="char-name">Character</div>
+        <div class="health-bar"><div class="health-fill" id="health" style="width: 100%"></div></div>
+        <div class="energy-bar"><div class="energy-fill" id="energy" style="width: 100%"></div></div>
+        <div style="margin-top: 10px; font-size: 12px;">Score: <span id="score">0</span></div>
+      </div>
+      <div class="character-select" id="char-select"></div>
+      <div class="ability-icons" id="abilities"></div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
